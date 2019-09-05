@@ -95,13 +95,14 @@ for i in range(len(files)):
         d = 0
         for w in big_idx: #big_idx
             if files[i] in big_idx[w] and files[j] in big_idx[w]:
-                qd += len(big_idx[w][files[i]]) * len(big_idx[w][files[j]])
-                q += len(big_idx[w][files[i]]) ** 2
-                d += len(big_idx[w][files[j]]) ** 2
+                qd += N[files[i]][1][w] * N[files[j]][1][w]
+                q += N[files[i]][1][w] ** 2
+                d += N[files[j]][1][w] ** 2
+
             elif files[i] in big_idx[w]:
-                q += len(big_idx[w][files[i]]) ** 2
+                q += N[files[i]][1][w] ** 2
             elif files[j] in big_idx[w]:
-                d += len(big_idx[w][files[j]]) ** 2
+                d += N[files[j]][1][w] ** 2
 
         if qd > 0:
             sim_matrix[i, j] = qd / (math.sqrt(q) * math.sqrt(d))
@@ -114,7 +115,7 @@ most_sim = [files[arg_max // len(files)], files[arg_max % len(files)]]
 # print(sim_matrix)
 print_tests()
 print('the most similar texts are: ', most_sim[0], ' and ', most_sim[1], 'with cosine similarity: ', max_sim)
-# bannlyst.txt  and  jerusalem.txt with cosine similarity:  0.98152277764499
+# kejsaren.txt  and  troll.txt with cosine similarity of ft_idf:  0.08834777884650884
 
 
 # pickle.dump(WORDS, open('save.p', "wb"))
