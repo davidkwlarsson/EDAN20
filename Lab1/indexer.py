@@ -3,7 +3,6 @@ import re
 import sys
 import os
 import numpy as np
-import collections as Counter
 
 def get_files(dir,suffix):
     files = []
@@ -68,7 +67,7 @@ for f in files:
     wordIter = re.finditer(r'\w+', text.lower())
     indexes = text_to_idx(wordIter)
     for word in indexes:
-        tf_idf[word] = (len(indexes[word])/tot_words[f])*np.log(len(files)/len(master_indexer[word]))
+        tf_idf[word] = (len(indexes[word])/tot_words[f])*np.log10(len(files)/len(master_indexer[word]))
 #
 # for keys,items in tf_idf.items():
 #     print(keys)
