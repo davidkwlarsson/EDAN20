@@ -8,13 +8,6 @@ import sys
 import os
 import math
 import numpy as np
-import collections as Counter
-
-# WORDS = Counter(re.findall(r'\w+', text.lower()))
-
-#def P(word, N=sum(WORDS.values())):
- #   "Probability of `word`."
-  #  return WORDS[word] / N
 
 
 def get_files(dir, suffix):
@@ -81,20 +74,22 @@ for f in files:
     N[f].append(tf_idf_list)
 
 # Printing the tf_idf values to compare with results in the assignment
-test_files = ['bannlyst.txt', 'gosta.txt', 'herrgard.txt', 'jerusalem.txt', 'nils.txt']
-test_words = ['känna', 'gås', 'nils', 'et']
-for f in test_files:
-    print(f)
-    for w in test_words:
-        print(w, N[f][1][w])
+def print_tests():
+    test_files = ['bannlyst.txt', 'gosta.txt', 'herrgard.txt', 'jerusalem.txt', 'nils.txt']
+    test_words = ['känna', 'gås', 'nils', 'et']
+    for f in test_files:
+        print(f)
+        for w in test_words:
+            print(w, N[f][1][w])
 
 # Getting the cosine similarity to compare all documents
 # sim_matrix = [[0]*len(files)]*len(files)
 # sim_matrix = [[0 for x in range(s)] for y in range(s)]
 sim_matrix = np.zeros([len(files), len(files)])
 
-for i in range(len(files)): #files
-    for j in range(len(files)):
+# Only fills sim_matrix under the diagonal since m_i,j = 1 and the matrix is symetric
+for i in range(len(files)):
+    for j in range(i):
         qd = 0
         q = 0
         d = 0
@@ -109,41 +104,22 @@ for i in range(len(files)): #files
                 d += len(big_idx[w][files[j]]) ** 2
 
         if qd > 0:
-            sim_matrix[i][j] = qd / (math.sqrt(q) * math.sqrt(d))
+            sim_matrix[i, j] = qd / (math.sqrt(q) * math.sqrt(d))
 
+arg_max = np.argmax(sim_matrix)
 
-    print(files[i], sim_matrix[i])
+max_sim = np.max(sim_matrix)      # sim_matrix[arg_max // len(files), arg_max % len(files)]
+most_sim = [files[arg_max // len(files)], files[arg_max % len(files)]]
 
+# print(sim_matrix)
+print_tests()
+print('the most similar texts are: ', most_sim[0], ' and ', most_sim[1], 'with cosine similarity: ', max_sim)
+# bannlyst.txt  and  jerusalem.txt with cosine similarity:  0.98152277764499
 
-#print(sim_matrix)
-
-#print(sim_matrix)
-
-# print(big_idx['som'])
-#print(big_idx['uppklarnande'])
-
-#print(big_idx['barndomsdrömmars'])
-#print(big_idx['avskedets'])
-#print(big_idx['undergång'])
-
-
-#tf_i,j * log(N/n_i).
-
-# som var varandra mycket olika
 
 # pickle.dump(WORDS, open('save.p', "wb"))
-# print(WORDS)
-
-# where you will get the matches and the positions with the group() and start() methods.
-
 # You will use the pickle package to write your dictionary in an file, see https://wiki.python.org/moin/UsingPickle
 
 # Save a dictionary into a pickle file.
-# import pickle
-# favorite_color = {"lion": "yellow", "kitty": "red"}
 # pickle.dump(favorite_color, open("save.p", "wb"))
-
-
-
-
 
