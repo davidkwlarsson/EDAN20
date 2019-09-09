@@ -1,9 +1,6 @@
-# Input: Selma novels.
-# Output: An index of all the words with their positions.
-# Execution (in terminal):  python indexer.py folder_name
 
 import pickle
-import re
+import regex as re
 import sys
 import os
 import math
@@ -30,22 +27,17 @@ def text_to_idx(wordIter):
 
 
 files = get_files(sys.argv[1], 'txt')
-# text = open(sys.argv[1]).read()
-
 big_idx = {}
-
-# N = [0] * len(files)    # number of word in each file
 N = {}                  # dict with file names as keys
 
 # Making the big dict
 for f in files:
-    # print(sys.argv[1] + '/' + f)
     text = open(sys.argv[1] + '/' + f).read()
-    # text = open('Selma/nils.txt').read()
-    # WORDS = re.findall(r'\w+', text.lower())
-    wordIter = re.finditer(r'\w+', text.lower())
+    wordIter = re.finditer('\p{L}+', text.lower())
     indexes = text_to_idx(wordIter)
 
+    output_path = 'indexes/' + f.split('/')[-1].split('.')[0] + '.idx'
+    pickle.dump(indexes, open(output_path, "wb"))
     N[f] = [0]
     for word in indexes:
         N[f][0] += len(indexes[word])
@@ -62,7 +54,6 @@ for f in files:
     for w in big_idx:
         try:
             num = len(big_idx[w][f])
-
         except:
             num = 0
 
@@ -75,16 +66,19 @@ for f in files:
 
 # Printing the tf_idf values to compare with results in the assignment
 def print_tests():
+    print('samlar: ', big_idx['samlar'])
+    print('ände: ', big_idx['ände'])
+
     test_files = ['bannlyst.txt', 'gosta.txt', 'herrgard.txt', 'jerusalem.txt', 'nils.txt']
     test_words = ['känna', 'gås', 'nils', 'et']
+
     for f in test_files:
-        print(f)
+        print(f, N[f][0])
+
         for w in test_words:
             print(w, N[f][1][w])
 
-# Getting the cosine similarity to compare all documents
-# sim_matrix = [[0]*len(files)]*len(files)
-# sim_matrix = [[0 for x in range(s)] for y in range(s)]
+
 sim_matrix = np.zeros([len(files), len(files)])
 
 # Only fills sim_matrix under the diagonal since m_i,j = 1 and the matrix is symetric
@@ -116,11 +110,3 @@ most_sim = [files[arg_max // len(files)], files[arg_max % len(files)]]
 print_tests()
 print('the most similar texts are: ', most_sim[0], ' and ', most_sim[1], 'with cosine similarity: ', max_sim)
 # kejsaren.txt  and  troll.txt with cosine similarity of ft_idf:  0.08834777884650884
-
-
-# pickle.dump(WORDS, open('save.p', "wb"))
-# You will use the pickle package to write your dictionary in an file, see https://wiki.python.org/moin/UsingPickle
-
-# Save a dictionary into a pickle file.
-# pickle.dump(favorite_color, open("save.p", "wb"))
-
