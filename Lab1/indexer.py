@@ -58,7 +58,7 @@ for f in files:
             num = 0
 
         tf = num / N[f][0]
-        idf = math.log(len(files) / len(big_idx[w].keys()), 10)
+        idf = math.log(len(files) / len(big_idx[w].keys()), 10) # not zero since we only have the word that occured at least once
         tf_idf = tf * idf
         tf_idf_list[w] = tf_idf
 
