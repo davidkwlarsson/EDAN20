@@ -3,7 +3,7 @@
 # Execution (in terminal):  python indexer.py folder_name
 
 import pickle
-import re
+import regex as re
 import sys
 import os
 import math
@@ -40,10 +40,12 @@ N = {}                  # dict with file names as keys
 # Making the big dict
 for f in files:
     # print(sys.argv[1] + '/' + f)
-    text = open(sys.argv[1] + '/' + f).read()
+    text = open(sys.argv[1] + '/' + f, encoding='UTF-8').read()
     # text = open('Selma/nils.txt').read()
-    # WORDS = re.findall(r'\w+', text.lower())
-    wordIter = re.finditer(r'\w+', text.lower())
+#    WORDS = re.findall(r'\p{L}+', text, flags = re.I)
+#    print(WORDS)
+#    exit()
+    wordIter = re.finditer(r'\p{L}+', text.lower(), flags = re.I)
     indexes = text_to_idx(wordIter)
 
     N[f] = [0]
@@ -74,13 +76,13 @@ for f in files:
     N[f].append(tf_idf_list)
 
 # Printing the tf_idf values to compare with results in the assignment
-# def print_tests():
-#     test_files = ['bannlyst.txt', 'gosta.txt', 'herrgard.txt', 'jerusalem.txt', 'nils.txt']
-#     test_words = ['känna', 'gås', 'nils', 'et']
-#     for f in test_files:
-#         print(f)
-#         for w in test_words:
-#             print(w, N[f][1][w])
+def print_tests():
+    test_files = ['bannlyst.txt', 'gosta.txt', 'herrgard.txt', 'jerusalem.txt', 'nils.txt']
+    test_words = ['känna', 'gås', 'nils', 'et']
+    for f in test_files:
+        print(f)
+        for w in test_words:
+            print(w, N[f][1][w])
 
 # Getting the cosine similarity to compare all documents
 # sim_matrix = [[0]*len(files)]*len(files)
@@ -112,7 +114,7 @@ max_sim = np.max(sim_matrix)      # sim_matrix[arg_max // len(files), arg_max % 
 most_sim = [files[arg_max // len(files)], files[arg_max % len(files)]]
 
 # print(sim_matrix)
-# print_tests()
+print_tests()
 print('the most similar texts are: ', most_sim[0], ' and ', most_sim[1], 'with cosine similarity: ', max_sim)
 # bannlyst.txt  and  jerusalem.txt with cosine similarity:  0.98152277764499
 
@@ -131,3 +133,33 @@ with open("save.p","rb") as handle:
     testpickle = pickle.load(handle)
 
 print(testpickle == N)
+print('Trying pickle file output')
+sim_matrix = np.zeros([len(files), len(files)])
+
+# Only fills sim_matrix under the diagonal since m_i,j = 1 and the matrix is symetric
+for i in range(len(files)):
+    for j in range(i):
+        qd = 0
+        q = 0
+        d = 0
+        for w in big_idx: #big_idx
+            if files[i] in big_idx[w] and files[j] in big_idx[w]:
+                qd += testpickle[files[i]][1][w] * testpickle[files[j]][1][w]
+                q += testpickle[files[i]][1][w] ** 2
+                d += testpickle[files[j]][1][w] ** 2
+            elif files[i] in big_idx[w]:
+                q += testpickle[files[i]][1][w] ** 2
+            elif files[j] in big_idx[w]:
+                d += testpickle[files[j]][1][w] ** 2
+
+        if qd > 0:
+            sim_matrix[i, j] = qd / (math.sqrt(q) * math.sqrt(d))
+
+arg_max = np.argmax(sim_matrix)
+
+max_sim = np.max(sim_matrix)      # sim_matrix[arg_max // len(files), arg_max % len(files)]
+most_sim = [files[arg_max // len(files)], files[arg_max % len(files)]]
+
+# print(sim_matrix)
+print_tests()
+print('the most similar texts are: ', most_sim[0], ' and ', most_sim[1], 'with cosine similarity: ', max_sim)
