@@ -15,10 +15,10 @@ def tokenize(text):
 
 def tokenize5(text):
     text = re.sub(r'\n', ' ', text)
-    text = re.sub(r'(\p{Lu}[^\.]+\. )', r'<s> \1\n', text)
+    text = re.sub(r'(\p{Lu}[^\.]+\. +)', r'<s> \1\n', text)
     text = re.sub(r'\. ', ' </s>', text)
-    text = tokenize(text)
-    return text
+    words = re.findall('\p{L}+|</*s>', text.lower())
+    return words
 
 
 def count_unigrams(words):
