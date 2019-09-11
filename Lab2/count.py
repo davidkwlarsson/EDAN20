@@ -15,7 +15,8 @@ def tokenize(text):
 
 def tokenize5(text):
     text = re.sub(r'\n', ' ', text)
-    text = re.sub(r'(\p{Lu}[^\.]+\. +)', r'<s> \1\n', text)
+    text = re.sub(r'\,', r'', text)
+    text = re.sub(r'(\p{Lu}[^\.]+[\.\!\?] +)', r'<s> \1\n', text)
     text = re.sub(r'\. ', ' </s>', text)
     words = re.findall('\p{L}+|</*s>', text.lower())
     return words
