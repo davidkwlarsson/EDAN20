@@ -12,10 +12,10 @@ import numpy as np
 
 def tokenize(text):
     text = re.sub(r'\n', ' ', text)
-    text = re.sub(r'\,', '', text)
-    text = re.sub(r'(\p{Lu}[^\.]+[\.\!\?] +)', r'<s> \1\n', text)
+    text = re.sub(r'[\,\"]', '', text)
+    text = re.sub(r'(\p{Lu}[^\.]+[\.\!\?] )', r'<s> \1', text)
     text = re.sub(r'\. ', ' </s>', text)
-    words = re.findall('\p{L}+|</*s>', text.lower())
+    words = re.findall('[</>\p{L}]+', text.lower())
     return words
 
 
