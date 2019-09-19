@@ -46,9 +46,9 @@ def train(corpus):
     """
     Fill in code to compute the chunk distribution for each part of speech
     """
-    print(chunk_dist['JJR'])
-    print(chunk_dist['CC'])
-    print(chunk_dist['NN'])
+    # print(chunk_dist['JJR'])
+    # print(chunk_dist['CC'])
+    # print(chunk_dist['NN'])
 
     # We determine the best association
     pos_chunk = {}
@@ -57,6 +57,18 @@ def train(corpus):
     You will build a dictionary with key values:
     pos_chunk[pos] = most frequent chunk for pos
     """
+    for pos in chunk_dist.keys():
+        initial = 1
+        for chunk in chunk_dist[pos].keys():
+
+            if pos in pos_chunk.keys():
+                if chunk_dist[pos][chunk] > chunk_dist[pos][pos_chunk[pos]]:
+                    pos_chunk[pos] = chunk
+
+            else:
+                pos_chunk[pos] = chunk
+
+    print(pos_chunk)
     return pos_chunk
 
 
