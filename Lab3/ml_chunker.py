@@ -31,7 +31,7 @@ def extract_features(sentences, w_size, feature_names):
     return X_l, y_l
 
 
-def extract_features_sent(sentence, w_size, feature_names):
+def extract_features_sent(sentence, w_size, feature_names, pred_sentence = None):
     """
     Extract the features from one sentence
     returns X and y, where X is a list of dictionaries and
@@ -55,7 +55,20 @@ def extract_features_sent(sentence, w_size, feature_names):
     for line in sentence:
         line = line.split()
         padded_sentence.append(line)
-    # print(padded_sentence)
+    #print(padded_sentence)
+
+    if (pred_sentence != None):
+        pred_sentence = start + pred_sentence
+        pred_sentence += end
+        padded_pred_sentence = list()
+        for line in pred_sentence:
+            line = line.split()
+            padded_pred_sentence.append(line)
+
+        for i in range(len(padded_pred_sentence) - 2*w_size):
+            for j in range(w_size):
+                padded_sentence[i+j][2] = padded_pred_sentence[i+j][2]
+
 
     # We extract the features and the classes
     # X contains is a list of features, where each feature vector is a dictionary
@@ -66,16 +79,18 @@ def extract_features_sent(sentence, w_size, feature_names):
         # x is a row of X
         x = list()
         # The words in lower case
+
         for j in range(2 * w_size + 1):
             x.append(padded_sentence[i + j][0].lower())
+
         # The POS
         for j in range(2 * w_size + 1):
             x.append(padded_sentence[i + j][1])
         # The chunks (Up to the word)
-        """
+
         for j in range(w_size):
-            feature_line.append(padded_sentence[i + j][2])
-        """
+            x.append(padded_sentence[i + j][2])
+
         # We represent the feature vector as a dictionary
         X.append(dict(zip(feature_names, x)))
         # The classes are stored in a list
@@ -84,28 +99,42 @@ def extract_features_sent(sentence, w_size, feature_names):
 
 
 def predict(test_sentences, feature_names, f_out):
+    # pred_sentence = list(conll_reader.read_sentences('out'))
+
     for test_sentence in test_sentences:
-        X_test_dict, y_test = extract_features_sent(test_sentence, w_size, feature_names)
-        # Vectorize the test sentence and one hot encoding
-        X_test = vec.transform(X_test_dict)
-        # Predicts the chunks and returns numbers
-        y_test_predicted = classifier.predict(X_test)
-        # Appends the predicted chunks as a last column and saves the rows
         rows = test_sentence.splitlines()
-        rows = [rows[i] + ' ' + y_test_predicted[i] for i in range(len(rows))]
+        i = 0
+        y_pred = {'chunk_n2' : "BOS", 'chunk_n1' : "BOS"}
         for row in rows:
+
+            X_test_dict, y_test = extract_features_sent(test_sentence, w_size, feature_names)
+            #print(row, "\n ", X_test_dict[i], "\n \n")
+            X_test_dict[i]['chunk_n2'] = y_pred['chunk_n2']
+            X_test_dict[i]['chunk_n1'] = y_pred['chunk_n1']
+            # Vectorize the test sentence and one hot encoding
+            X_test = vec.transform(X_test_dict[i])
+            # Predicts the chunks and returns numbers
+            y_test_predicted = classifier.predict(X_test)
+            y_pred['chunk_n2'] = y_pred['chunk_n1']
+            y_pred['chunk_n1'] = y_test_predicted
+            # Appends the predicted chunks as a last column and saves the rows
+
+            # print(y_test_predicted[0], "\n \n")
+            row = row + ' ' + y_test_predicted[0]
+
             f_out.write(row + '\n')
+            i += 1
         f_out.write('\n')
     f_out.close()
 
 
 if __name__ == '__main__':
     start_time = time.clock()
-    train_corpus = '../../../corpus/conll2000/train.txt'
-    test_corpus = '../../../corpus/conll2000/test.txt'
+    train_corpus = 'train.txt'
+    test_corpus = 'test.txt'
     w_size = 2  # The size of the context window to the left and right of the word
     feature_names = ['word_n2', 'word_n1', 'word', 'word_p1', 'word_p2',
-                     'pos_n2', 'pos_n1', 'pos', 'pos_p1', 'pos_p2']
+                     'pos_n2', 'pos_n1', 'pos', 'pos_p1', 'pos_p2', 'chunk_n2', 'chunk_n1']
 
     train_sentences = conll_reader.read_sentences(train_corpus)
 
@@ -122,7 +151,10 @@ if __name__ == '__main__':
 
     training_start_time = time.clock()
     print("Training the model...")
-    classifier = linear_model.LogisticRegression(penalty='l2', dual=True, solver='liblinear')
+    #classifier = linear_model.LogisticRegression(penalty='l2', dual=True, solver='liblinear')
+    #classifier = tree.DecisionTreeClassifier()
+    classifier = linear_model.Perceptron(penalty='l2')
+    #classifier = svm.SVC()
     model = classifier.fit(X, y)
     print(model)
 
@@ -145,7 +177,7 @@ if __name__ == '__main__':
     # but we need to predict one sentence at a time to have the same
     # corpus structure
     print("Predicting the test set...")
-    f_out = open('out', 'w')
+    f_out = open('out', 'w', newline='\n')
     predict(test_sentences, feature_names, f_out)
 
     end_time = time.clock()
