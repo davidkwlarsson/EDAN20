@@ -46,9 +46,9 @@ def train(corpus):
     """
     Fill in code to compute the chunk distribution for each part of speech
     """
-    # print(chunk_dist['JJR'])
-    # print(chunk_dist['CC'])
-    # print(chunk_dist['NN'])
+    print("JJR: ", chunk_dist['JJR'], "\n")
+    print("CC: ", chunk_dist['CC'], "\n")
+    print("NN: ", chunk_dist['NN'])
 
     # We determine the best association
     pos_chunk = {}
@@ -68,7 +68,7 @@ def train(corpus):
             else:
                 pos_chunk[pos] = chunk
 
-    print(pos_chunk)
+    # print(pos_chunk)
     return pos_chunk
 
 
@@ -120,7 +120,7 @@ if __name__ == '__main__':
     predicted = predict(model, test_corpus)
     accuracy = eval(predicted)
     print("Accuracy", accuracy)
-    f_out = open('out.txt', 'w')
+    f_out = open('out.txt', 'w', newline='\n')
     # We write the word (form), part of speech (pos),
     # gold-standard chunk (chunk), and predicted chunk (pchunk)
     for sentence in predicted:

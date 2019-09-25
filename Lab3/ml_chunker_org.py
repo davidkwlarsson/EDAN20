@@ -122,8 +122,8 @@ if __name__ == '__main__':
 
     training_start_time = time.clock()
     print("Training the model...")
-    classifier = linear_model.LogisticRegression(penalty='l2', dual=True, solver='liblinear')
-    #classifier = tree.DecisionTreeClassifier()
+    #classifier = linear_model.LogisticRegression(penalty='l2', dual=True, solver='liblinear')
+    classifier = tree.DecisionTreeClassifier()
     #classifier = linear_model.Perceptron(penalty='l2')
     #classifier = svm.SVC()
     model = classifier.fit(X, y)
