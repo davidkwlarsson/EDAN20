@@ -74,6 +74,61 @@ def save(file, formatted_corpus, column_names):
     f_out.close()
 
 
+def get_pairs():
+    pairs = {}
+    nbr_pairs = 0
+    for sentence in formatted_corpus:
+        for word in sentence:
+            if word['deprel'] == 'SS':
+                w2 = sentence[int(word['head'])]['form']
+                tup = (word['form'].lower(), w2.lower())
+                nbr_pairs += 1
+                if tup in pairs:
+                    pairs[tup] += 1
+                else:
+                    pairs[tup] = 1
+
+    print('antalet hittade par: ', nbr_pairs)
+    sorted_pairs = [(k, pairs[k]) for k in sorted(pairs, key=pairs.get, reverse=True)]
+    i = 0
+    for sp in sorted_pairs:
+        print(sp)
+        i += 1
+        if i == 5:
+            break
+    #return pairs, nbr_pairs
+
+
+def get_triples():
+    triples = {}
+    nbr_triples = 0
+    for sentence in formatted_corpus:
+        for word in sentence:
+            # Find verb to subject
+            if word['deprel'] == 'SS':
+                w2 = sentence[int(word['head'])]
+                # Find same verb again but from object
+                for w3 in sentence:
+                    if w3['deprel'] == 'OO' and w3['head'] == w2['id']:
+                        tup = (word['form'].lower(), w2['form'].lower(), w3['form'].lower())
+                        nbr_triples += 1
+                        if tup in triples:
+                            triples[tup] += 1
+                        else:
+                            triples[tup] = 1
+
+    print('antalet hittade triplar: ', nbr_triples)
+    sorted_triples = [(k, triples[k]) for k in sorted(triples, key=triples.get, reverse=True)]
+    i = 0
+    for st in sorted_triples:
+        print(st)
+        i += 1
+        if i == 5:
+            break
+    #return triples, nbr_triples
+
+
+
 if __name__ == '__main__':
     column_names_2006 = ['id', 'form', 'lemma', 'cpostag', 'postag', 'feats', 'head', 'deprel', 'phead', 'pdeprel']
 
@@ -84,49 +139,19 @@ if __name__ == '__main__':
     sentences = read_sentences(train_file)
     formatted_corpus = split_rows(sentences, column_names_2006)
     print(train_file, len(formatted_corpus), len(formatted_corpus[0]))
-    #print(formatted_corpus[0])
 
-    print(type(formatted_corpus))
-    print(type(formatted_corpus[0]))
-    print(type(formatted_corpus[0][0]))
+    get_pairs()
+    get_triples()
 
+    column_names_u = ['id', 'form', 'lemma', 'upostag', 'xpostag', 'feats', 'head', 'deprel', 'deps', 'misc']
 
-    pairs = {}
-    nbr_pairs = 0
-    for sentence in formatted_corpus:
-        for word in sentence:
-            if word['deprel'] == 'SS': #word[column_names_2006[7]
-                #print('se här!!!', sentence[int(word['head'])]['form'] )
+    # EN: SS -> nsubj OO ->nobj
+    files = get_files('ud-treebanks-v2.4/UD_Swedish-Talbanken', 'train.conllu')
+    for train_file in files:
+        sentences = read_sentences(train_file)
+        formatted_corpus = split_rows(sentences, column_names_u)
+        # print(train_file, len(formatted_corpus))
+        # print(formatted_corpus[0])
+        get_pairs()
+        get_triples()
 
-                w2 = sentence[int(word['head'])]['form'].lower()
-
-                tup = (word['form'].lower(), w2)
-                nbr_pairs += 1
-                if tup in pairs:
-                    pairs[tup] += 1
-                # elif (tup[1], tup[0]) in pairs:
-                #     pairs[(tup[1], tup[0])] += 1
-                else:
-                    pairs[tup] = 1
-
-
-    print('antalet hittade par: ', nbr_pairs)
-    sorted_pairs = [(k, pairs[k]) for k in sorted(pairs, key=pairs.get, reverse=True)]
-    i = 0
-    for sp in sorted_pairs:
-        print(sp)
-        #print(sp[0])
-        #print((sp[0][1], sp[0][0]))
-        i += 1
-        if i == 5:
-            break
-
-
-    #column_names_u = ['id', 'form', 'lemma', 'upostag', 'xpostag', 'feats', 'head', 'deprel', 'deps', 'misc']
-
-    #files = get_files('../../corpus/ud-treebanks-v2.4/', 'train.conllu')
-    #for train_file in files:
-     #   sentences = read_sentences(train_file)
-      #  formatted_corpus = split_rows(sentences, column_names_u)
-       # print(train_file, len(formatted_corpus))
-        #print(formatted_corpus[0])
