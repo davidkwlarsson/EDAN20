@@ -5,6 +5,10 @@ __author__ = "Pierre Nugues"
 
 import transition
 import conll
+import features
+from sklearn.feature_extraction import DictVectorizer
+from sklearn import linear_model
+import time
 
 
 def reference(stack, queue, graph):
@@ -45,19 +49,27 @@ def reference(stack, queue, graph):
 
 
 if __name__ == '__main__':
-    train_file = '../../../corpus/conllx/sv/swedish_talbanken05_train.conll'
-    test_file = '../../../corpus/conllx/sv/swedish_talbanken05_test_blind.conll'
+    train_file = 'swedish_talbanken05_train.conll'
+    test_file = 'swedish_talbanken05_test_blind.conll'
     column_names_2006 = ['id', 'form', 'lemma', 'cpostag', 'postag', 'feats', 'head', 'deprel', 'phead', 'pdeprel']
     column_names_2006_test = ['id', 'form', 'lemma', 'cpostag', 'postag', 'feats']
 
     sentences = conll.read_sentences(train_file)
     formatted_corpus = conll.split_rows(sentences, column_names_2006)
 
+    # feature_names = ['stack0_POS' , 'stack0_WORD', 'queue0_POS', 'queue0_WORD', 'can-re' , 'can-la']
+    feature_names = ['stack0_POS', 'stack1_POS', 'stack0_WORD', 'stack1_WORD',
+                     'queue0_POS', 'queue1_POS', 'queue0_WORD', 'queue1_WORD', 'can-re', 'can-la']
+    # feature_names = ['stack0_POS' , 'stack1_POS', 'stack0_WORD', 'stack1_WORD',
+    #                          'queue0_POS', 'queue1_POS', 'queue0_WORD', 'queue1_WORD', 'can-re' , 'can-la']
+
+    X_dict = []
+    Y = []
     sent_cnt = 0
     for sentence in formatted_corpus:
         sent_cnt += 1
         if sent_cnt % 1000 == 0:
-            print(sent_cnt, 'sentences on', len(formatted_corpus), flush=True)
+            print(sent_cnt, 'sentences of', len(formatted_corpus), flush=True)
         stack = []
         queue = list(sentence)
         graph = {}
@@ -66,14 +78,40 @@ if __name__ == '__main__':
         graph['deprels'] = {}
         graph['deprels']['0'] = 'ROOT'
         transitions = []
+
         while queue:
             stack, queue, graph, trans = reference(stack, queue, graph)
             transitions.append(trans)
+            x = features.extract(stack, queue, graph, feature_names, sentence)
+            X_dict.extend(x)
+            Y.extend([trans])
+            # print(x, "       y = " , trans)
+
         stack, graph = transition.empty_stack(stack, graph)
-        print('Equal graphs:', transition.equal_graphs(sentence, graph))
+
+        # print('Equal graphs:', transition.equal_graphs(sentence, graph))
+
+        # if not transition.equal_graphs(sentence, graph):
+        #     for word in sentence:
+        #         print(word['form'])
+        #     print(transitions)
+        #     print(graph)
+        #     break
 
         # Poorman's projectivization to have well-formed graphs.
         for word in sentence:
             word['head'] = graph['heads'][word['id']]
-        print(transitions)
-        print(graph)
+        # print(transitions)
+        # print(graph)
+
+    print("Encoding the features...")
+    # Vectorize the feature matrix and carry out a one-hot encoding
+    vec = DictVectorizer(sparse=True)
+    X = vec.fit_transform(X_dict)
+
+    training_start_time = time.clock()
+    print("Training the model...")
+    classifier = linear_model.LogisticRegression(penalty='l2', dual=True, solver='liblinear')
+    model = classifier.fit(X, Y)
+    print(model)
+
