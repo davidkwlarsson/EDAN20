@@ -9,8 +9,6 @@ def extract(stack, queue, graph, feature_names, sentence):
         x = list()
         x.append(stack[0][0])
         x.append(queue[0][0])
-        x.append(transition.can_leftarc(stack, graph))
-        x.append(transition.can_reduce(stack, graph))
 
     elif nbr_param == 10:
         x = list()
@@ -20,9 +18,6 @@ def extract(stack, queue, graph, feature_names, sentence):
         for j in range(2):
             x.append(queue[0][j])
 
-        x.append(transition.can_leftarc(stack, graph))
-        x.append(transition.can_reduce(stack, graph))
-
     elif nbr_param == 16:
         x = list()
         for j in range(2):
@@ -30,6 +25,7 @@ def extract(stack, queue, graph, feature_names, sentence):
 
         for j in range(2):
             x.append(queue[0][j])
-
+    x.append(transition.can_leftarc(stack, graph))
+    x.append(transition.can_reduce(stack, graph))
     features.append(dict(zip(feature_names, x)))
     return features
