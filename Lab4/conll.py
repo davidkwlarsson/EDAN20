@@ -74,12 +74,11 @@ def save(file, formatted_corpus, column_names):
     f_out.close()
 
 
-def get_pairs():
-    pairs = {}
+def get_pairs(pairs, corpus, subj):
     nbr_pairs = 0
-    for sentence in formatted_corpus:
+    for sentence in corpus:
         for word in sentence:
-            if word['deprel'] == 'SS':
+            if word['deprel'] == subj:
                 w2 = sentence[int(word['head'])]['form']
                 tup = (word['form'].lower(), w2.lower())
                 nbr_pairs += 1
@@ -88,28 +87,19 @@ def get_pairs():
                 else:
                     pairs[tup] = 1
 
-    print('antalet hittade par: ', nbr_pairs)
-    sorted_pairs = [(k, pairs[k]) for k in sorted(pairs, key=pairs.get, reverse=True)]
-    i = 0
-    for sp in sorted_pairs:
-        print(sp)
-        i += 1
-        if i == 5:
-            break
-    #return pairs, nbr_pairs
 
+    return pairs, nbr_pairs
 
-def get_triples():
-    triples = {}
+def get_triples(triples, corpus, subj, obj):
     nbr_triples = 0
-    for sentence in formatted_corpus:
+    for sentence in corpus:
         for word in sentence:
             # Find verb to subject
-            if word['deprel'] == 'SS':
+            if word['deprel'] == subj:
                 w2 = sentence[int(word['head'])]
                 # Find same verb again but from object
                 for w3 in sentence:
-                    if w3['deprel'] == 'OO' and w3['head'] == w2['id']:
+                    if w3['deprel'] == obj and w3['head'] == w2['id']:
                         tup = (word['form'].lower(), w2['form'].lower(), w3['form'].lower())
                         nbr_triples += 1
                         if tup in triples:
@@ -117,17 +107,20 @@ def get_triples():
                         else:
                             triples[tup] = 1
 
-    print('antalet hittade triplar: ', nbr_triples)
-    sorted_triples = [(k, triples[k]) for k in sorted(triples, key=triples.get, reverse=True)]
-    i = 0
-    for st in sorted_triples:
-        print(st)
-        i += 1
-        if i == 5:
-            break
-    #return triples, nbr_triples
+    return triples, nbr_triples
 
+def remove_lines(corpus):
+    new_corpus = []
+    for sentence in corpus:
+        new_sentence = []
+        for word in sentence:
+            if len(word['id']) == 1:
+                # Adds word without range in index to new sentence
+                new_sentence.append(word)
+        # Adds the new sentence to the new corpus
+        new_corpus.append(new_sentence)
 
+    return new_corpus
 
 if __name__ == '__main__':
     column_names_2006 = ['id', 'form', 'lemma', 'cpostag', 'postag', 'feats', 'head', 'deprel', 'phead', 'pdeprel']
@@ -140,18 +133,94 @@ if __name__ == '__main__':
     formatted_corpus = split_rows(sentences, column_names_2006)
     print(train_file, len(formatted_corpus), len(formatted_corpus[0]))
 
-    get_pairs()
-    get_triples()
+    pairs = {}
+    pairs, nbr_pairs = get_pairs(pairs, formatted_corpus, 'SS')
+    print('antalet hittade par: ', nbr_pairs)
+    sorted_pairs = [(k, pairs[k]) for k in sorted(pairs, key=pairs.get, reverse=True)]
+    i = 0
+    for sp in sorted_pairs:
+        print(sp)
+        i += 1
+        if i == 5:
+            break
+
+    triples = {}
+    triples, nbr_triples = get_triples(triples, formatted_corpus, 'SS', 'OO')
+    print('antalet hittade triplar: ', nbr_triples)
+    sorted_triples = [(k, triples[k]) for k in sorted(triples, key=triples.get, reverse=True)]
+    i = 0
+    for st in sorted_triples:
+        print(st)
+        i += 1
+        if i == 5:
+            break
 
     column_names_u = ['id', 'form', 'lemma', 'upostag', 'xpostag', 'feats', 'head', 'deprel', 'deps', 'misc']
 
     # EN: SS -> nsubj OO ->nobj
-    files = get_files('ud-treebanks-v2.4/UD_Swedish-Talbanken', 'train.conllu')
-    for train_file in files:
-        sentences = read_sentences(train_file)
-        formatted_corpus = split_rows(sentences, column_names_u)
-        # print(train_file, len(formatted_corpus))
-        # print(formatted_corpus[0])
-        get_pairs()
-        get_triples()
+    #files = get_files('ud-treebanks-v2.4/UD_Swedish-Talbanken', 'train.conllu')
+    file = 'en_esl-ud-train.conllu'
 
+    sentences = read_sentences(file)
+    formatted_corpus = split_rows(sentences, column_names_2006)
+    #formatted_corpus = split_rows(sentences, column_names_u)
+    # Remove all lines that include range in id field
+    formatted_corpus = remove_lines(formatted_corpus)
+
+    pairs = {}
+    pairs, nbr_pairs = get_pairs(pairs, formatted_corpus, 'nsubj')
+    print('antalet hittade par: ', nbr_pairs)
+    sorted_pairs = [(k, pairs[k]) for k in sorted(pairs, key=pairs.get, reverse=True)]
+    i = 0
+    for sp in sorted_pairs:
+        print(sp)
+        i += 1
+        if i == 5:
+            break
+
+    triples = {}
+    triples, nbr_triples = get_triples(triples, formatted_corpus, 'nsubj', 'obj')
+
+    print('antalet hittade triplar: ', nbr_triples)
+    sorted_triples = [(k, triples[k]) for k in sorted(triples, key=triples.get, reverse=True)]
+    i = 0
+    for st in sorted_triples:
+        print(st)
+        i += 1
+        if i == 5:
+            break
+
+def unused():
+    files_EN = get_files('English', 'train.conllu')
+    files_FR = get_files('French', 'train.conllu')
+    files_SP = get_files('Spanish', 'train.conllu')
+
+    F = [files_EN, files_FR, files_SP]
+    languages = ['English', 'French', 'Spanish']
+
+    pairs = [{}, {}, {}]
+    triples = [{}, {}, {}]
+    for i in range(len(F)):
+        files = F[i]
+        lan = languages[i]
+        print('Here commes the result from the ', lan, ' corpuses:')
+
+        for train_file in files:
+            sentences = read_sentences(train_file)
+            formatted_corpus = split_rows(sentences, column_names_u)
+            # print(train_file, len(formatted_corpus))
+            # print(formatted_corpus[0])
+
+            # Remove all lines that include range in id field
+            formatted_corpus = remove_lines(formatted_corpus)
+            get_pairs(pairs[i], formatted_corpus, 'nsubj')
+            get_triples(triples[i], formatted_corpus, 'nsubj', 'obj')
+
+        print('antalet hittade par: ', nbr_pairs)
+        sorted_pairs = [(k, pairs[i][k]) for k in sorted(pairs[i], key=pairs[i].get, reverse=True)]
+        i = 0
+        for sp in sorted_pairs:
+            print(sp)
+            i += 1
+            if i == 5:
+                break
