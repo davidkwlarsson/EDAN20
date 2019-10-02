@@ -10,6 +10,7 @@ import conll
 import dparser
 
 
+
 def shift(stack, queue, graph):
     """
     Shift the first word in the queue onto the stack
@@ -95,7 +96,7 @@ def can_reduce(stack, graph):
 
 def can_leftarc(stack, graph):
     """
-    Checks that the top of the has no head
+    Checks that the top of the stack has no head
     :param stack:
     :param graph:
     :return:
@@ -148,7 +149,7 @@ def equal_graphs(sentence, graph):
         if word['id'] in graph['heads'] and word['head'] == graph['heads'][word['id']]:
             pass
         else:
-            print(word, flush=True)
+            # print(word, flush=True)
             equal = False
     return equal
 
