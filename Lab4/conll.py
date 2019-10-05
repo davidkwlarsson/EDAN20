@@ -247,6 +247,7 @@ if __name__ == '__main__':
 
     sub_verbs_obj, tot2 = extract_subverbobj(formatted_corpus)
     print("total subverbsobjs: ", tot2)
+
     sorted_subverbobj = sort_dictvals(sub_verbs_obj)
     i = 0
     for trip in sorted_subverbobj:
@@ -268,7 +269,7 @@ if __name__ == '__main__':
         i = 0
         for pair in sorted_subverb_U:
             print(pair, ": ", sorted_subverb_U[pair])
-            if i > 5:
+            if i >= 5:
                 break
             i += 1
 
@@ -278,7 +279,7 @@ if __name__ == '__main__':
         i = 0
         for trip in sorted_subverbobj_U:
             print(trip, ": ", sorted_subverbobj_U[trip])
-            if i > 5:
+            if i >= 5:
                 break
             i += 1
 

@@ -62,6 +62,7 @@ def extract_features_sent(sentence, w_size, feature_names):
     # y is the list of classes
     X = list()
     y = list()
+    print(padded_sentence)
     for i in range(len(padded_sentence) - 2 * w_size):
         # x is a row of X
         x = list()
@@ -78,6 +79,7 @@ def extract_features_sent(sentence, w_size, feature_names):
         """
         # We represent the feature vector as a dictionary
         X.append(dict(zip(feature_names, x)))
+        # print(X)
         # The classes are stored in a list
         y.append(padded_sentence[i + w_size][2])
     return X, y
@@ -119,15 +121,18 @@ if __name__ == '__main__':
     # The statement below will swallow a considerable memory
     # X = vec.fit_transform(X_dict).toarray()
     # print(vec.get_feature_names())
+    print(X.shape)
+    print(len(y))
 
     training_start_time = time.clock()
     print("Training the model...")
-    #classifier = linear_model.LogisticRegression(penalty='l2', dual=True, solver='liblinear')
-    classifier = tree.DecisionTreeClassifier()
+    classifier = linear_model.LogisticRegression(penalty='l2', dual=False, solver='liblinear')
+    # classifier = tree.DecisionTreeClassifier()
     #classifier = linear_model.Perceptron(penalty='l2')
     #classifier = svm.SVC()
     model = classifier.fit(X, y)
     print(model)
+    print(model.accuracy)
 
     test_start_time = time.clock()
     # We apply the model to the test set

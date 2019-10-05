@@ -44,26 +44,55 @@ def extract(stack, queue, graph, feature_names, sentence):
     elif nbr_param == 14:
         x = list()
         for j in range(2):
-            x.append(stack[j]['postag'])
-
+            try:
+                x.append(stack[j]['postag'])
+            except:
+                x.append('nil')
         for j in range(2):
-            x.append(stack[j]['form'])
-
+            try:
+                x.append(stack[j]['form'])
+            except:
+                x.append('nil')
         for j in range(2):
-            x.append(queue[j]['postag'])
-
+            try:
+                x.append(queue[j]['postag'])
+            except:
+                x.append('nil')
         for j in range(2):
-            x.append(queue[j]['form'])
+            try:
+                x.append(queue[j]['form'])
+            except:
+                x.append('nil')
+        if stack:
+            word1found = False
+            word2found = False
+            for word in sentence:
+                if int(word['id']) == int(stack[0]['id'])+1:
+                    x.append(word['postag'])
+                    x.append(word['form'])
+                    word1found = True
 
-        for word in sentence:
-            if word['id'] == stack[0]['id']+1:
-                x.append(word['postag'])
-                x.append(word['form'])
-            if word['id'] == stack[0]['id']+2:
-                x.append(word['postag'])
-                x.append(word['form]'])
+            if not word1found:
+                x.append('nil')
+                x.append('nil')
 
-    x.append(transition.can_leftarc(stack, graph))
+            for word in sentence:
+                if int(word['id']) == int(stack[0]['id'])+2:
+                    x.append(word['postag'])
+                    x.append(word['form'])
+                    word2found = True
+
+            if not word2found:
+                x.append('nil')
+                x.append('nil')
+        else:
+            x.append('nil')
+            x.append('nil')
+            x.append('nil')
+            x.append('nil')
+
     x.append(transition.can_reduce(stack, graph))
+    x.append(transition.can_leftarc(stack, graph))
     features.append(dict(zip(feature_names, x)))
+    # print(features)
     return features
