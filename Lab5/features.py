@@ -81,16 +81,16 @@ def extract(stack, queue, graph, feature_names, sentence):
         x.append('nil')
         x.append('nil')
         if stack:
-            wftositso_id = stack[0]['id'] + 1
+            wftositso_id = int(stack[0]['id']) + 1
             for word in sentence:
-                if word['id'] == wftositso_id:
+                if int(word['id']) == wftositso_id:
                     x[-4] = word['postag']
                     x[-3] = word['form']
-                    wftositso_id += 1
                     break
 
+            wftositso_id += 1
             for word in sentence:
-                if word['id'] == wftositso_id:
+                if int(word['id']) == wftositso_id:
                     x[-2] = word['postag']
                     x[-1] = word['form']
                     break
