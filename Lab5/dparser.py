@@ -1,7 +1,6 @@
 """
-Gold standard parser
+dependency parser
 """
-__author__ = "Pierre Nugues"
 
 import transition
 import conll
@@ -11,8 +10,6 @@ import numpy as np
 from sklearn.feature_extraction import DictVectorizer
 from sklearn import linear_model
 from sklearn import metrics
-from sklearn.naive_bayes import GaussianNB
-from sklearn.model_selection import GridSearchCV
 import pickle
 
 
@@ -183,8 +180,7 @@ if __name__ == '__main__':
     for i in range(3):
         classifier = linear_model.LogisticRegression(penalty='l2', dual=False, solver='lbfgs', max_iter=100,
                                                      multi_class='auto')
-        # solver = lbfgs is good. Also sag and saga is good for large scale problems. liblinear handles only binary class.
-        # multiclass: ‘auto’ selects ‘ovr’ if the data is binary, or if solver=’liblinear’, and otherwise selects ‘multinomial’
+
         X_train, y_train, vec = train(train_file, column_names_2006, feature_names[i])
         model = classifier.fit(X_train, y_train)
 
